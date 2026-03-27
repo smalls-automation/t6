@@ -1,40 +1,28 @@
 # Architecture Overview
 
-## Overview
-The **t6 Todo App** is a purely client‑side web application. It consists of three static files:
-- `index.html` – the markup and container for the UI.
-- `styles.css` – minimal styling for a clean, responsive layout.
-- `script.js` – JavaScript handling all interactions (add, toggle, delete).
+The **t6 Todo App** is a client‑side‑only web application. It consists of three core static assets:
 
-## Technical Stack
-- **HTML5** – structure of the page.
-- **CSS3** – layout and visual styling (flexbox, simple responsive design).
-- **Vanilla JavaScript (ES6+)** – DOM manipulation, event handling, and in‑memory state management.
+- **index.html** – The entry point containing the markup for the todo list UI.
+- **style.css** – Basic styling to make the UI clean and responsive.
+- **script.js** – JavaScript that implements the todo model, UI interactions, and persistence using the browser's `localStorage`.
 
-## Data Model
-```json
-{
-  "id": "string",   // unique identifier (e.g., UUID or timestamp)
-  "title": "string",
-  "completed": false
-}
+## Design Decisions
+1. **No backend** – All data is kept locally; this eliminates any need for a server, database, or authentication.
+2. **Vanilla stack** – Using plain HTML/CSS/JS keeps the footprint tiny and avoids build tooling.
+3. **LocalStorage persistence** – Provides simple, key‑value storage that survives page reloads.
+4. **Modular JavaScript** – The script is organized into a small `TodoApp` object that encapsulates state and behavior.
+
+## File Structure
 ```
-All todo items are kept in an array held in memory while the page is open. No persistence (e.g., localStorage) is required per the original requirements.
-
-## Component Diagram
-```
-[User] <--interacts with--> [Browser] <--loads--> [index.html]
-                                          |
-                                          v
-                                    [script.js] (handles UI logic)
+/t6/
+├─ index.html
+├─ style.css
+├─ script.js
+├─ README.md
+└─ ARCHITECTURE.md
 ```
 
-## Non‑Functional Considerations
-- **Zero backend** – runs from any static file server or directly from the filesystem.
-- **Compatibility** – works in all modern browsers supporting ES6.
-- **Performance** – O(n) operations on the in‑memory array are sufficient for typical personal todo lists.
-
-## Future Enhancements (out of scope for Phase‑1)
-- Persist todos using `localStorage` or `IndexedDB`.
-- Add drag‑and‑drop reordering.
-- Mobile‑first responsive improvements.
+## Future Extensions (optional)
+- Add drag‑and‑drop reordering of tasks.
+- Support for multiple lists.
+- Sync across devices using a cloud storage API.
