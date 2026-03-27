@@ -1,76 +1,82 @@
-(function() {
+// TodoApp encapsulates state and behavior
+const TodoApp = (() => {
   const STORAGE_KEY = 't6_todos';
+  let todos = [];
 
-  function loadTodos() {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  }
+  const load = () => {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (data) {
+      try { todos = JSON.parse(data); }
+      catch { todos = []; }
+    }
+  };
 
-  function saveTodos(todos) {
+  const save = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-  }
+  };
 
-  function render(todos) {
+  const add = (title) => {
+    const id = Date.now().toString();
+    todos.push({ id, title, completed: false });
+    save();
+    render();
+  };
+
+  const toggle = (id) => {
+    const todo = todos.find(t => t.id === id);
+    if (todo) {
+      todo.completed = !todo.completed;
+      save();
+      render();
+    }
+  };
+
+  const remove = (id) => {
+    todos = todos.filter(t => t.id !== id);
+    save();
+    render();
+  };
+
+  const render = () => {
     const list = document.getElementById('todo-list');
     list.innerHTML = '';
-    todos.forEach(todo => {
+    todos.forEach(t => {
       const li = document.createElement('li');
-      li.className = 'todo-item' + (todo.completed ? ' completed' : '');
+      li.dataset.id = t.id;
+      if (t.completed) li.classList.add('completed');
 
       const span = document.createElement('span');
-      span.textContent = todo.title;
-
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.checked = todo.completed;
-      checkbox.addEventListener('change', () => {
-        todo.completed = checkbox.checked;
-        saveTodos(todos);
-        render(todos);
-      });
+      span.textContent = t.title;
+      span.style.cursor = 'pointer';
+      span.onclick = () => toggle(t.id);
 
       const delBtn = document.createElement('button');
-      delBtn.textContent = '✕';
-      delBtn.addEventListener('click', () => {
-        const idx = todos.findIndex(t => t.id === todo.id);
-        if (idx > -1) {
-          todos.splice(idx, 1);
-          saveTodos(todos);
-          render(todos);
-        }
-      });
+      delBtn.className = 'delete-btn';
+      delBtn.textContent = '✖';
+      delBtn.onclick = () => remove(t.id);
 
-      const left = document.createElement('div');
-      left.style.display = 'flex';
-      left.style.alignItems = 'center';
-      left.style.gap = '0.5rem';
-      left.appendChild(checkbox);
-      left.appendChild(span);
-
-      li.appendChild(left);
+      li.appendChild(span);
       li.appendChild(delBtn);
       list.appendChild(li);
     });
-  }
+  };
 
-  function addTodo(title) {
-    const todos = loadTodos();
-    const newTodo = { id: Date.now(), title, completed: false };
-    todos.push(newTodo);
-    saveTodos(todos);
-    render(todos);
-  }
-
-  document.getElementById('todo-form').addEventListener('submit', e => {
-    e.preventDefault();
+  const init = () => {
+    load();
+    render();
+    const form = document.getElementById('todo-form');
     const input = document.getElementById('new-todo');
-    const title = input.value.trim();
-    if (title) {
-      addTodo(title);
-      input.value = '';
-    }
-  });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = input.value.trim();
+      if (title) {
+        add(title);
+        input.value = '';
+      }
+    });
+  };
 
-  // Initial render
-  render(loadTodos());
+  return { init };
 })();
+
+document.addEventListener('DOMContentLoaded', TodoApp.init);
